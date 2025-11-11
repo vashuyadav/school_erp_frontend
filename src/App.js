@@ -28,6 +28,8 @@ function App() {
           <Route path="/class/edit/:id" element={<AddClass header="Edit Class" />} />
 
           <Route path="/section" element={<SectionList />} />
+          {/* this file is with two types of pagination */}
+          {/* <Route path="/section" element={<SectionListPagination />} /> */}
           <Route path="/section/create" element={<AddSection />} />
           <Route path="/section/edit/:id" element={<AddSection />} />
         </Routes>

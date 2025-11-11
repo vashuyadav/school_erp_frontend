@@ -5,7 +5,7 @@ import Notification from "../../components/common/Notification";
 import { getStatusLabel } from "../../utils/helpers";
 
 
-const SectionList = (props) => {
+const SectionListPagination = (props) => {
 
     const [sections, setSections] = useState([]);
     const location = useLocation();
@@ -21,9 +21,9 @@ const SectionList = (props) => {
         }
     }, [location]);
 
-    const fetchRecords = async (page = 1, perPage = 3) => {
+    const fetchRecords = async (page = 1) => {
         try {
-            const response = await api.get(`/section?page=${page}&per_page=${perPage}`);
+            const response = await api.get(`/section?page=${page}`);
             setSections(response.data.data);
             setCurrentPage(response.data.current_page);
             setLastPage(response.data.last_page);
@@ -103,7 +103,28 @@ const SectionList = (props) => {
                                             ))}
                                         </tbody>
                                     </table>
-                                    {/* pagination start */}
+                                    
+                                    {/* pagination style 1 */}
+                                    <nav>
+                                        <ul className="pagination justify-content-center mt-3">
+                                            <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
+                                                <button className="page-link" onClick={() => fetchRecords(currentPage - 1)} >
+                                                    Previous
+                                                </button>
+                                            </li>
+                                            <li className="page-item">
+                                                <span className="page-link">
+                                                    Page {currentPage} of {lastPage}
+                                                </span>
+                                            </li>
+                                            <li className={`page-item ${currentPage === lastPage ? "disabled" : ""}`}>
+                                                <button className="page-link" onClick={() => fetchRecords(currentPage + 1)} >
+                                                    Next
+                                                </button>
+                                            </li>
+                                        </ul>
+                                    </nav>
+                                    {/* pagination style 2 */}
                                     <nav>
                                         <ul className="pagination justify-content-center mt-3">
                                             <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
@@ -127,7 +148,7 @@ const SectionList = (props) => {
                                             </li>
                                         </ul>
                                     </nav>
-                                    {/* pagination end */}
+
                                 </div>
                             </div>
                         </div>
@@ -145,4 +166,4 @@ const SectionList = (props) => {
     )
 }
 
-export default SectionList
+export default SectionListPagination
