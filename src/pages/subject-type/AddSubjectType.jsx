@@ -1,42 +1,50 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext, useRef } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import api from "../../components/api/api";
 import Notification from "../../components/common/Notification";
+import { LoadingBarContext } from "../../App"; // for top loader
 
-const AddSection = (props) => {
+const AddClassMappings = (props) => {
+    const { startLoading, updateLoading, completeLoading } = useContext(LoadingBarContext);
     const { id } = useParams();
     const navigate = useNavigate();
 
     const [formData, setFormData] = useState({
-        section_name: "",
-        is_active: true,
+        name: "",
+        status: true,
     });
 
     const [loading, setLoading] = useState(false);
     const [isEditMode, setIsEditMode] = useState(false);
     const [notify, setNotify] = useState({ message: "", type: "success" });
 
+    // useRef me stable references store karo
+    const loadingRef = useRef({ startLoading, updateLoading, completeLoading });
+    useEffect(() => {
+        loadingRef.current = { startLoading, updateLoading, completeLoading };
+    }, [startLoading, updateLoading, completeLoading]);
+
     // Load data if editing existing record
     useEffect(() => {
         if (id) {
             setIsEditMode(true);
-            fetchSectionData(id);
+            fetchSubjectTypeData(id);
         }
     }, [id]);
 
     // Fetch existing class data
-    const fetchSectionData = async (sectionId) => {
+    const fetchSubjectTypeData = async (rowId) => {
         try {
             setLoading(true);
-            const res = await api.get(`/section/${sectionId}`);
+            const res = await api.get(`/subject-type/${rowId}`);
             const editData = res.data;
 
             setFormData({
-                section_name: editData.section_name || "",
-                is_active: editData.is_active ?? true,
+                name: editData.name || "",
+                status: editData.status ?? true,
             });
         } catch (error) {
-            console.error("Failed to fetch section:", error);
+            console.error("Failed to fetch record:", error);
         } finally {
             setLoading(false);
         }
@@ -55,18 +63,18 @@ const AddSection = (props) => {
         try {
             let res;
             if (isEditMode) {
-                res = await api.put(`/section/${id}`, formData);
+                res = await api.put(`/subject-type/${id}`, formData);
             } else {
-                res = await api.post("/section", formData);
+                res = await api.post("/subject-type", formData);
             }
             // send message with navigate
-            navigate("/section", {
+            navigate("/subject-type", {
                 state: {
-                    notify: { message: res.data.message || "Operation successful!",type: "success" }
+                    notify: { message: res.data.message || "Operation successful!", type: "success" }
                 },
             });
         } catch (error) {
-            console.error("Error saving section:", error);
+            console.error("Error saving class mapping:", error);
             setNotify({
                 message: error.response?.data?.message || "Something went wrong!",
                 type: "danger"
@@ -78,42 +86,32 @@ const AddSection = (props) => {
 
     return (
         <main className="app-main">
-            <div className="app-content-header">
-                <div className="container-fluid">
-                    <div className="row">
-                        <div className="col-sm-6">
-                            <h4 className="mb-0">{isEditMode ? "Edit Section" : "Add Section"}</h4>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div className="app-content">
+            <div className="app-content mt-3">
                 <div className="container-fluid">
                     <div className="row g-4">
                         <div className="col-md-12">
                             <div className="card card-primary card-outline mb-4">
                                 <div className="card-header">
                                     <div className="card-title">
-                                        {isEditMode ? "Edit Section" : "Add Section"}
+                                        {isEditMode ? "Edit Subject Type" : "Add Subject Type"}
                                     </div>
                                 </div>
 
                                 <form onSubmit={handleSubmit}>
                                     <div className="card-body">
                                         <div className="mb-3">
-                                            <label htmlFor="section_name" className="form-label">Section Name</label>
-                                            <input type="text" name="section_name" id="section_name" value={formData.section_name} onChange={handleChange} className="form-control" />
+                                            <label htmlFor="name" className="form-label">Subject Type Name</label>
+                                            <input type="text" className="form-control" id="name" name="name" value={formData.name} onChange={handleChange} />
                                         </div>
-
+                                        
                                         <div className="mb-3 form-check">
-                                            <input type="checkbox" className="form-check-input" id="is_active" name="is_active" checked={formData.is_active} onChange={handleChange} />
-                                            <label className="form-check-label" htmlFor="is_active"> Active </label>
+                                            <input type="checkbox" className="form-check-input" id="status" name="status" checked={formData.status} onChange={handleChange} />
+                                            <label className="form-check-label" htmlFor="status"> Active </label>
                                         </div>
                                     </div>
 
                                     <div className="card-footer">
-                                        <Link to="/section" className="btn btn-danger"> <i className="bi bi-arrow-return-right"></i> Return </Link>
+                                        <Link to="/subject-type" className="btn btn-danger"> <i className="bi bi-arrow-return-right"></i> Return </Link>
                                         &nbsp;
                                         <button type="submit" className="btn btn-primary" disabled={loading} >
                                             {loading ? "Saving..." : isEditMode ? "Update" : "Create"}
@@ -136,4 +134,4 @@ const AddSection = (props) => {
     );
 };
 
-export default AddSection
+export default AddClassMappings

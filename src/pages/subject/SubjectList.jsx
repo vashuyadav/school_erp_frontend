@@ -5,9 +5,9 @@ import Notification from "../../components/common/Notification";
 import { getStatusLabel } from "../../utils/helpers";
 import { LoadingBarContext } from "../../App"; // for top loader
 
-const SectionList = (props) => {
+const SubjectList = (props) => {
     const { startLoading, updateLoading, completeLoading } = useContext(LoadingBarContext); // use loading context
-    const [sections, setSections] = useState([]);
+    const [rows, setRows] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [lastPage, setLastPage] = useState(1);
     const [notify, setNotify] = useState({ message: "", type: "success" });
@@ -27,23 +27,23 @@ const SectionList = (props) => {
         loadingRef.current = { startLoading, updateLoading, completeLoading };
     }, [startLoading, updateLoading, completeLoading]);
 
-    const fetchRecords = useCallback(async (page = 1, perPage = 3) => {
+    const fetchRecords = useCallback(async (page = 1, perPage = 5) => {
         const { startLoading, updateLoading, completeLoading } = loadingRef.current;
         try {
             startLoading(); // start top loading bar
-            const response = await api.get(`/section?page=${page}&per_page=${perPage}`);
+            const response = await api.get(`/subject?page=${page}&per_page=${perPage}`);
             updateLoading(70); // mid-progress
-            setSections(response.data.data);
+            setRows(response.data.data);
             setCurrentPage(response.data.current_page);
             setLastPage(response.data.last_page);
         } catch (error) {
-            console.error("Error fetching sections:", error);
+            console.error("Error fetching records:", error);
         } finally {
             setTimeout(() => {
                 completeLoading(); // ensures 100% completion
             }, 300);
         }
-    },[]);
+    }, []);
 
     useEffect(() => {
         fetchRecords();
@@ -54,15 +54,15 @@ const SectionList = (props) => {
             const { startLoading, updateLoading, completeLoading } = loadingRef.current;
             try {
                 startLoading();
-                const res = await api.delete(`/section/${id}`);
+                const res = await api.delete(`/subject/${id}`);
                 setNotify({
                     message: res?.data?.message || "Record deleted successfully!",
                     type: "success",
                 });
                 updateLoading(70); // mid-progress
-                setSections((prev) => prev.filter((c) => c.id !== id));
+                setRows((prev) => prev.filter((c) => c.id !== id));
             } catch (err) {
-                console.error("Error deleting section:", err);
+                console.error("Error deleting class mapping:", err);
                 setNotify({
                     message: err.response?.data?.message || "Something went wrong!",
                     type: "danger",
@@ -85,11 +85,11 @@ const SectionList = (props) => {
                                 <div className="card-header">
                                     <div className="row">
                                         <div className="col-md-6">
-                                            <h3 className="card-title">Section List</h3>
+                                            <h3 className="card-title">Subject Type List</h3>
                                         </div>
                                         <div className="col-md-6" style={{ textAlign: "right" }}>
 
-                                            <Link to="/section/create" className="btn btn-primary btn-header">
+                                            <Link to="/subject/create" className="btn btn-primary btn-header">
                                                 <i className="icon bi bi-plus-circle"></i> Add
                                             </Link>
 
@@ -101,28 +101,39 @@ const SectionList = (props) => {
                                         <thead>
                                             <tr>
                                                 <th style={{ width: "5%" }}>#</th>
-                                                <th>Section Name</th>
+                                                <th>Subject Type</th>
+                                                <th>Short Name</th>
+                                                <th>Name</th>
                                                 <th>Status</th>
                                                 <th>Action</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {sections.map((section, index) => (
-                                                <tr className="align-middle" key={section.id}>
-                                                    <td>{index + 1}</td>
-                                                    <td>{section.section_name}</td>
-                                                    <td>{getStatusLabel(section.is_active)}</td>
-                                                    <td>
-                                                        <div style={{ display: "flex", gap: "6px" }}>
-                                                            <Link to={`/section/edit/${section.id}`} className="btn btn-primary btn-sm"><i className="icon bi bi-pencil-square"></i></Link>
-                                                            <Link to="#" className="btn btn-danger btn-sm" onClick={() => { handleDelete(section.id) }}><i className="bi bi-trash"></i></Link>
-                                                        </div>
-                                                    </td>
+                                            {rows.length === 0 ? (
+                                                <tr>
+                                                    <td colSpan="6" className="text-center text-muted py-3"> No records found </td>
                                                 </tr>
-                                            ))}
+                                            ) : (
+                                                rows.map((row, index) => (
+                                                    <tr className="align-middle" key={row.id}>
+                                                        <td>{index + 1}</td>
+                                                        <td>{row.subject_type?.name}</td>
+                                                        <td>{row.short_name}</td>
+                                                        <td>{row.subject_name}</td>
+                                                        <td>{getStatusLabel(row.status)}</td>
+                                                        <td>
+                                                            <div style={{ display: "flex", gap: "6px" }}>
+                                                                <Link to={`/subject/edit/${row.id}`} className="btn btn-primary btn-sm"><i className="icon bi bi-pencil-square"></i></Link>
+                                                                <Link to="#" className="btn btn-danger btn-sm" onClick={() => { handleDelete(row.id) }}><i className="bi bi-trash"></i></Link>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                ))
+                                            )}
                                         </tbody>
                                     </table>
                                     {/* pagination start */}
+                                    {rows.length !== 0 && (
                                     <nav>
                                         <ul className="pagination justify-content-center mt-3">
                                             <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
@@ -146,6 +157,7 @@ const SectionList = (props) => {
                                             </li>
                                         </ul>
                                     </nav>
+                                    )}
                                     {/* pagination end */}
                                 </div>
                             </div>
@@ -164,4 +176,4 @@ const SectionList = (props) => {
     )
 }
 
-export default SectionList
+export default SubjectList

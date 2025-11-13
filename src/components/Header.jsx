@@ -1,6 +1,36 @@
-import React from 'react'
+import React, { useEffect } from 'react'
+import api from "../components/api/api";
 
 const Header = () => {
+    const body = document.body;
+    useEffect(() => {
+        body.classList.add("layout-fixed", "sidebar-expand-lg", "bg-body-tertiary");
+        body.classList.remove("login-page", "bg-body-secondary");
+    }, []);
+
+    const handleLogout = async () => {
+        try {
+            // Get token from localStorage
+            const token = localStorage.getItem("token");
+            if (!token) {
+                window.location.href = "/login";
+                return;
+            }
+            // Attach token in Authorization header
+            await api.post("/api/logout", {}, {
+                headers: { Authorization: `Bearer ${token}`, },
+            });
+            // Clear token from localStorage
+            localStorage.removeItem("token");
+            // Redirect to login
+            window.location.href = "/login";
+        } catch (error) {
+            console.error("Logout error:", error);
+            localStorage.removeItem("token");
+            window.location.href = "/login";
+        }
+    };
+
     return (
         <>
             <nav className="app-header navbar navbar-expand bg-body">
@@ -51,32 +81,6 @@ const Header = () => {
                                                 ></span>
                                             </h3>
                                             <p className="fs-7">Call me whenever you can...</p>
-                                            <p className="fs-7 text-secondary">
-                                                <i className="bi bi-clock-fill me-1"></i> 4 Hours Ago
-                                            </p>
-                                        </div>
-                                    </div>
-                                    {/* end::Message */}
-                                </a>
-                                <div className="dropdown-divider"></div>
-                                <a href="#" className="dropdown-item">
-                                    {/* begin::Message */}
-                                    <div className="d-flex">
-                                        <div className="flex-shrink-0">
-                                            <img
-                                                src="assets/img/user8-128x128.jpg"
-                                                alt="User Avatar"
-                                                className="img-size-50 rounded-circle me-3"
-                                            />
-                                        </div>
-                                        <div className="flex-grow-1">
-                                            <h3 className="dropdown-item-title">
-                                                John Pierce
-                                                <span className="float-end fs-7 text-secondary">
-                                                    <i className="bi bi-star-fill"></i>
-                                                </span>
-                                            </h3>
-                                            <p className="fs-7">I got your message bro</p>
                                             <p className="fs-7 text-secondary">
                                                 <i className="bi bi-clock-fill me-1"></i> 4 Hours Ago
                                             </p>
@@ -143,25 +147,17 @@ const Header = () => {
                             </div>
                         </li>
                         {/* end::Notifications Dropdown Menu */}
-                        
+
                         {/* begin::User Menu Dropdown */}
                         <li className="nav-item dropdown user-menu">
                             <a href="#" className="nav-link dropdown-toggle" data-bs-toggle="dropdown">
-                                <img
-                                    src="assets/img/user2-160x160.jpg"
-                                    className="user-image rounded-circle shadow"
-                                    alt="User Image"
-                                />
+                                <img src="assets/img/avatar5.png" className="user-image rounded-circle shadow" alt="User Image" />
                                 <span className="d-none d-md-inline">Admin</span>
                             </a>
                             <ul className="dropdown-menu dropdown-menu-lg dropdown-menu-end">
                                 {/* begin::User Image */}
                                 <li className="user-header text-bg-primary">
-                                    <img
-                                        src="assets/img/user2-160x160.jpg"
-                                        className="rounded-circle shadow"
-                                        alt="User Image"
-                                    />
+                                    <img src="assets/img/avatar5.png" className="rounded-circle shadow" alt="User Image" />
                                     <p>
                                         Admin - Web Developer
                                         <small>Member since Nov. 2023</small>
@@ -170,19 +166,17 @@ const Header = () => {
                                 {/* end::User Image */}
                                 {/* begin::Menu Body */}
                                 <li className="user-body">
-                                    {/* begin::Row */}
                                     <div className="row">
                                         <div className="col-4 text-center"><a href="#">Followers</a></div>
                                         <div className="col-4 text-center"><a href="#">Sales</a></div>
                                         <div className="col-4 text-center"><a href="#">Friends</a></div>
                                     </div>
-                                    {/* end::Row */}
                                 </li>
                                 {/* end::Menu Body */}
                                 {/* begin::Menu Footer */}
                                 <li className="user-footer">
                                     <a href="#" className="btn btn-default btn-flat">Profile</a>
-                                    <a href="#" className="btn btn-default btn-flat float-end">Sign out</a>
+                                    <a href="#" className="btn btn-default btn-flat float-end" onClick={handleLogout}>Sign out</a>
                                 </li>
                                 {/* end::Menu Footer */}
                             </ul>

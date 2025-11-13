@@ -1,6 +1,16 @@
-import React from 'react'
+import React, { useEffect, useContext } from "react";
+import { LoadingBarContext } from "../App";
 
 const Dashboard = () => {
+    const { completeLoading } = useContext(LoadingBarContext);
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            completeLoading();
+        }, 600);
+        return () => clearTimeout(timer);
+    }, []);
+
     return (
         <>
 
